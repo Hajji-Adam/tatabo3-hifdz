@@ -1,0 +1,21 @@
+module.exports = {
+  success: 'ناجح',
+  error: 'خطأ',
+  serverError: 'حدث خطأ في الخادم',
+  notFound: 'غير موجود',
+  unauthorized: 'غير مصرح',
+  forbidden: 'ممنوع الوصول',
+
+  invalidCredentials: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+  loginSuccess: 'تم تسجيل الدخول بنجاح',
+  logoutSuccess: 'تم تسجيل الخروج بنجاح',
+  roleNotAllowed: 'لا يمكن إنشاء هذا الدور',
+
+  userCreated: 'تم إنشاء المستخدم بنجاح',
+  adminCreated: 'تم إنشاء مدير جديد بنجاح',
+
+  usersFetched: 'تم جلب المستخدمين بنجاح',
+  userNotFound: 'المستخدم غير موجود',
+  userUpdated: 'تم تحديث المستخدم بنجاح',
+  userDeleted: 'تم حذف المستخدم بنجاح',
+};
