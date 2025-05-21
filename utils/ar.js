@@ -18,4 +18,5 @@ module.exports = {
   userNotFound: 'المستخدم غير موجود',
   userUpdated: 'تم تحديث المستخدم بنجاح',
   userDeleted: 'تم حذف المستخدم بنجاح',
+  userFound: 'تم العثور على المستخدم',
 };
