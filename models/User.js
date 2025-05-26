@@ -1,20 +1,43 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: {
+  name: {
+    type: String,
+    required: true,
+  },
+  phone: {
     type: String,
     unique: true,
-    validate: [validator.isEmail, 'البريد الإلكتروني غير صحيح'],
+    required: true,
   },
-  password: { type: String, required: true, select: false },
+  password: {
+    type: String,
+    required: true,
+    select: false,
+  },
   role: {
     type: String,
     enum: ['student', 'teacher', 'admin'],
     default: 'student',
   },
-  joinedAt: { type: Date, default: Date.now },
+  gender: {
+    type: String,
+    enum: ['male', 'female'],
+    required: true,
+  },
+  category: {
+    type: String,
+    enum: ['grand', 'middle', 'small'],
+    default: 'small',
+  },
+  photo: {
+    type: String,
+    default: null,
+  },
+  joinedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model('User', userSchema);

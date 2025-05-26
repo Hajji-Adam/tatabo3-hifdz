@@ -1,7 +1,5 @@
-// controllers/userController.js
 const User = require('../models/User');
 const ar = require('../utils/ar');
-const bcrypt = require('bcryptjs');
 
 // Get all users (Admin only)
 exports.getAllUsers = async (req, res) => {
@@ -13,7 +11,7 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Get user by ID (Admin only)
+// Get single user by ID (Admin only)
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
@@ -30,7 +28,6 @@ exports.updateUser = async (req, res) => {
   try {
     const updates = req.body;
 
-    // Hash password if provided
     if (updates.password) {
       updates.password = await bcrypt.hash(updates.password, 10);
     }

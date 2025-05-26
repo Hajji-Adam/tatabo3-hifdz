@@ -3,46 +3,97 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { secret } = require('../config/jwt');
 const ar = require('../utils/ar');
+const { bucket } = require('../config/firebase');
 
-// Any admin can create student or teacher
+// Register Student or Teacher (Admin Only)
 exports.register = async (req, res) => {
-  const { name, email, password, role } = req.body;
+  const { name, phone, password, role, gender, category } = req.body;
 
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: ar.forbidden });
+  let photoUrl = null;
+
+  // Upload photo to Firebase if provided
+  if (req.file) {
+    const fileName = `photos/${Date.now()}-${req.file.originalname}`;
+    const file = bucket.file(fileName);
+
+    try {
+      await file.save(req.file.buffer, {
+        metadata: {
+          contentType: req.file.mimetype,
+        },
+      });
+
+      // Get public URL
+      const [url] = await file.getSignedUrl({
+        action: 'read',
+        expires: '03-09-2100', // Set expiration date far into the future
+      });
+      photoUrl = url;
+    } catch (error) {
+      console.error('Error uploading to Firebase Storage:', error);
+      return res.status(500).json({ success: false, message: ar.serverError });
+    }
   }
-
-  const allowedRoles = ['student', 'teacher'];
-  if (!allowedRoles.includes(role)) {
-    return res.status(400).json({ success: false, message: ar.roleNotAllowed });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
-    const user = await User.create({ name, email, password: hashedPassword, role });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      phone,
+      password: hashedPassword,
+      role,
+      gender,
+      category,
+      photo: photoUrl,
+    });
+
     res.status(201).json({ success: true, message: ar.userCreated, data: user });
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
 };
 
-// Only admin can create another admin
+// Register Admin (Admin Only)
 exports.registerAdmin = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, phone, password, gender } = req.body;
 
-  if (!req.user || req.user.role !== 'admin') {
-    return res.status(403).json({ success: false, message: ar.forbidden });
+  let photoUrl = null;
+
+  // Upload photo to Firebase if provided
+  if (req.file) {
+    const fileName = `photos/${Date.now()}-${req.file.originalname}`;
+    const file = bucket.file(fileName);
+
+    try {
+      await file.save(req.file.buffer, {
+        metadata: {
+          contentType: req.file.mimetype,
+        },
+      });
+
+      // Get public URL
+      const [url] = await file.getSignedUrl({
+        action: 'read',
+        expires: '03-09-2100', // Set expiration date far into the future
+      });
+      photoUrl = url;
+    } catch (error) {
+      console.error('Error uploading to Firebase Storage:', error);
+      return res.status(500).json({ success: false, message: ar.serverError });
+    }
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-
   try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user = await User.create({
       name,
-      email,
+      phone,
       password: hashedPassword,
       role: 'admin',
+      gender,
+      photo: photoUrl,
     });
 
     res.status(201).json({ success: true, message: ar.adminCreated, data: user });
@@ -51,10 +102,10 @@ exports.registerAdmin = async (req, res) => {
   }
 };
 
-// Login existing user
+// Login via Phone
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email }).select('+password');
+  const { phone, password } = req.body;
+  const user = await User.findOne({ phone }).select('+password');
 
   if (!user || !(await bcrypt.compare(password, user.password))) {
     return res.status(401).json({ success: false, message: ar.invalidCredentials });
@@ -79,7 +130,7 @@ exports.login = async (req, res) => {
   });
 };
 
-// Logout user
+// Logout
 exports.logout = (req, res) => {
   res.cookie('jwt', '', {
     httpOnly: true,
